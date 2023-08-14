@@ -1,8 +1,8 @@
-type CouchDb interface{
+type CouchDbInterface interface{
     SimpleFind()
 }
 
-type CouchConfig interface{
+type CouchConfiginterface interface{
     GetConfig()
     GetGloabalConfig()
     GetDeviceUuid()
