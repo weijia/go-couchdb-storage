@@ -76,7 +76,7 @@ func NewCouchDbConfig(CouchDbServer string) *CouchDbConfig {
   return &couchDbConfig
 }
 
-func (couchDbStorage CouchDbStorage) SimpleFind(query interface{}) []map[string]*json.RawMessage {
+func (couchDbStorage CouchDbStorage) SimpleFind(query interface{}) objmap []map[string]interface{} {
   res = couchDbStorage.MainDb.Find(context.TODO(), query)
   for res.Next() {
     log.Printf("Doc ID: %s\n", changes.ID())
@@ -96,35 +96,42 @@ func (couchDbStorage CouchDbStorage) SimpleFind(query interface{}) []map[string]
     fmt.Printf("%s", b)
     fmt.Printf("Got doc: %+v\n", doc)
 	  
-    var objs []map[string]*json.RawMessage
+    var objs []map[string]interface{}
     if err := json.Unmarshal([]byte(b), &objs); err != nil {
         log.Fatal(err)
     }
     return objs
   }
+  return nil
 }
 
-func (couchDbStorage CouchDbStorage) GetConfig(key string) []map[string]*json.RawMessage {
-  query:= map["string"] interface {} {
-    "selecor": map["string"] interface {
+func (couchDbStorage CouchDbStorage) GetConfig(key string, defaultValue string) objmap []map[string]interface{} {
+  data := map["string"] interface {
       "type": "config",
       "device_uuid": couchDbStorage.Uuid,
       "name": key,
-    },
-    "skip": 0,
-    "limit": 5,
   }
-  couchDbStorage.SimpleFind(query)
+  return couchDbStorage.GetOrCreateConfig(base, defaultValue)
 }
 
-func (couchDbStorage CouchDbStorage) GetGlobalConfig(key string) []map[string]*json.RawMessage {
-  query:= map["string"] interface {} {
-    "selecor": map["string"] interface {
+func (couchDbStorage CouchDbStorage) GetGlobalConfig(key string, defaultValue string) objmap []map[string]interface{} {
+  base := map["string"] interface {
       "type": "config",
       "name": key,
-    },
+  }
+  return couchDbStorage.GetOrCreateConfig(base, defaultValue)
+}
+
+func (couchDbStorage CouchDbStorage) GetOrCreateConfig(base map["string"]interface {}, defaultValue string) {
+  query:= map["string"] interface {} {
+    "selector": base,
     "skip": 0,
     "limit": 5,
   }
-  couchDbStorage.SimpleFind(query)
+  res := couchDbStorage.SimpleFind(query)
+  if res == nil {
+    base["value"] = defaultValue
+    couchDbStorage.MainDb.CreateDoc(context.TODO(), base)
+    return defaultValue
+  }
 }
