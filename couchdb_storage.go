@@ -29,27 +29,27 @@ type ServerConfig struct {
 func NewCouchDbConfig(CouchDbServer string) *CouchDbConfig {
   const CONFIG_FILE_NAME := "couch_config.json"
   viper.SetConfigName("iot_go.json")
-	viper.SetConfigType("json")
-	viper.AddConfigPath(".")
-	err := viper.ReadInConfig()
+viper.SetConfigType("json")
+viper.AddConfigPath(".")
+err := viper.ReadInConfig()
 
-	if err != nil {
-    uuid := uuid.New()
-    key := uuid.String()
-		defaultServerConfig := ServerConfig {
-      UUID: key,
-      CouchDbServer: CouchDbServer,
-      CouchDbUser: "test",
-      MainDb: "production",
-      CouchDbPassword："test"
-    }
+    if err != nil {
+	    uuid := uuid.New()
+	    key := uuid.String()
+	    defaultServerConfig := ServerConfig {
+	      UUID: key,
+	      CouchDbServer: CouchDbServer,
+	      CouchDbUser: "test",
+	      MainDb: "production",
+	      CouchDbPassword："test"
+	    }
 		defaultLocalConfig, _ := json.Marshal(defaultServerConfig)
 		/*******************  使用 ioutil.WriteFile 写入文件 *****************/
 		err2 := os.WriteFile("./"+CONFIG_FILE_NAME, defaultLocalConfig, 0666) //写入文件(字节数组)
 		if err2 != nil {
 			log.Fatal(err2)
 		}
-
+		
 		secondErr := viper.ReadInConfig()
 		if secondErr != nil {
 			log.Fatal(secondErr)
@@ -131,7 +131,12 @@ func (couchDbStorage CouchDbStorage) GetOrCreateConfig(base map["string"]interfa
   res := couchDbStorage.SimpleFind(query)
   if res == nil {
     base["value"] = defaultValue
+    base["timestamp"] = couchDbStorage.GetTimestamp()
     couchDbStorage.MainDb.CreateDoc(context.TODO(), base)
     return defaultValue
   }
+}
+
+func (couchDbStorage CouchDbStorage) GetTimestamp() int64 {
+  return time.Unix()
 }
