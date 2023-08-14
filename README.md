@@ -1,0 +1,1 @@
+# go-couchdb-storage
