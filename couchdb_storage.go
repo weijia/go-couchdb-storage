@@ -76,16 +76,7 @@ func NewCouchDbConfig(CouchDbServer string) *CouchDbConfig {
   return &couchDbConfig
 }
 
-func (couchDbStorage CouchDbStorage) GetConfig(key string) string {
-  query:= map["string"] interface {} {
-    "selecor": map["string"] interface {
-      "type": "config",
-      "device_uuid": couchDbStorage.Uuid,
-      "name": key,
-    },
-    "skip": 0,
-    "limit": 5,
-  }
+func (couchDbStorage CouchDbStorage) SimpleFind(query interface{}) []map[string]*json.RawMessage {
   res = couchDbStorage.MainDb.Find(context.TODO(), query)
   for res.Next() {
     log.Printf("Doc ID: %s\n", changes.ID())
@@ -104,6 +95,36 @@ func (couchDbStorage CouchDbStorage) GetConfig(key string) string {
 
     fmt.Printf("%s", b)
     fmt.Printf("Got doc: %+v\n", doc)
-    return b
+	  
+    var objs []map[string]*json.RawMessage
+    if err := json.Unmarshal([]byte(b), &objs); err != nil {
+        log.Fatal(err)
+    }
+    return objs
   }
+}
+
+func (couchDbStorage CouchDbStorage) GetConfig(key string) []map[string]*json.RawMessage {
+  query:= map["string"] interface {} {
+    "selecor": map["string"] interface {
+      "type": "config",
+      "device_uuid": couchDbStorage.Uuid,
+      "name": key,
+    },
+    "skip": 0,
+    "limit": 5,
+  }
+  couchDbStorage.SimpleFind(query)
+}
+
+func (couchDbStorage CouchDbStorage) GetGlobalConfig(key string) []map[string]*json.RawMessage {
+  query:= map["string"] interface {} {
+    "selecor": map["string"] interface {
+      "type": "config",
+      "name": key,
+    },
+    "skip": 0,
+    "limit": 5,
+  }
+  couchDbStorage.SimpleFind(query)
 }
