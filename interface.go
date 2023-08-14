@@ -1,10 +1,11 @@
-type CouchDbInterface interface{
-    SimpleFind()
+package couchdb_storage
+
+type CouchDbInterface interface {
+	SimpleFind()
 }
 
-type CouchConfiginterface interface{
-    GetConfig()
-    GetGloabalConfig()
-    GetDeviceUuid()
+type CouchConfigInterface interface {
+	GetConfig()
+	GetGlobalConfig()
+	GetDeviceUuid()
 }
-
