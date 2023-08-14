@@ -140,3 +140,7 @@ func (couchDbStorage CouchDbStorage) GetOrCreateConfig(base map["string"]interfa
 func (couchDbStorage CouchDbStorage) GetTimestamp() int64 {
   return time.Unix()
 }
+
+func (couchDbStorage CouchDbStorage) GetDeviceUuid() string {
+  return couchDbStorage.DeviceUuid
+}
